@@ -3,9 +3,12 @@
     height: 5rem;
     text-align: center;
 }
-.square--dark{
+.square--black{
     background-color: rgb(218, 127, 127);
 }
-.square--light{
+.square--white{
     background-color: rgb(245, 200, 200);
+}
+.square--possible{
+    background-color: rgb(97, 97, 97);
 }
