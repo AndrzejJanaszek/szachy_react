@@ -15,6 +15,7 @@ export class Board extends Component {
             currentPosition: [],
             possibleMoves : [],
             movingPieceCords : null,
+            colorOnMove: ENUMS.CHESS_COLOR.WHITE,
         }
         // sets -> this.state.currentPosition as an array[][]
         for (let i = 0; i < 8; i++) {
@@ -26,6 +27,8 @@ export class Board extends Component {
 
         // let startingPositionFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         this.currentPosition = this.fenAnalis(this.state.positions[0]);
+
+
         // binds
         this.fenAnalis = this.fenAnalis.bind(this);
         this.pieceSymbol2PieceType = this.pieceSymbol2PieceType.bind(this);
@@ -127,6 +130,7 @@ export class Board extends Component {
                 this.state.movingPieceCords = cords;
 
                 let possibleMoves= [];
+                let enemyColor = pieceColor == ENUMS.CHESS_COLOR.WHITE ? ENUMS.CHESS_COLOR.BLACK : ENUMS.CHESS_COLOR.WHITE;
                 switch (this.pieceSymbol2PieceType(pieceSymbol)) {
                     case ENUMS.PIECE_TYPE.PAWN:
                         let pColorNumber = pieceColor == ENUMS.CHESS_COLOR.WHITE ? -1 : 1;
@@ -137,26 +141,26 @@ export class Board extends Component {
                         if(validateMove(basic)){
                             if( this.pieceSymbol2PieceColor(this.state.currentPosition[basic.row][basic.col]) == 0 ){
                                 possibleMoves.push(basic);
-                            }
-                        }
-
-                        // pierwszy podwójny
-                        let firstLine = onMove == ENUMS.CHESS_COLOR.WHITE ? 6 : 1;
-                        if(cords.row == firstLine){
-                            let firstPawnMove = cords.add(new Cords(pColorNumber*2,0))
-                            if(validateMove(firstPawnMove)){
-                                if( this.pieceSymbol2PieceColor(this.state.currentPosition[firstPawnMove.row][firstPawnMove.col]) == 0 ){
-                                    possibleMoves.push(firstPawnMove);
-                                    // TODO: w FEN trzeba zapisać że jest możliwe bicie w przelocie
+                                
+                                // pierwszy podwójny
+                                let firstLine = onMove == ENUMS.CHESS_COLOR.WHITE ? 6 : 1;
+                                if(cords.row == firstLine){
+                                    let firstPawnMove = cords.add(new Cords(pColorNumber*2,0))
+                                    if(validateMove(firstPawnMove)){
+                                        if( this.pieceSymbol2PieceColor(this.state.currentPosition[firstPawnMove.row][firstPawnMove.col]) == 0 ){
+                                            possibleMoves.push(firstPawnMove);
+                                            // TODO: w FEN trzeba zapisać że jest możliwe bicie w przelocie
+                                        }
+                                    }
                                 }
                             }
                         }
+
 
                         // bicia
                         let captures = [cords.add(new Cords(pColorNumber*1,-1)),cords.add(new Cords(pColorNumber*1,1))];
                         for(let move of captures){
                             if(validateMove(move)){
-                                let enemyColor = pieceColor == ENUMS.CHESS_COLOR.WHITE ? ENUMS.CHESS_COLOR.BLACK : ENUMS.CHESS_COLOR.WHITE;
                                 if( this.pieceSymbol2PieceColor(this.state.currentPosition[move.row][move.col]) == enemyColor){
                                     possibleMoves.push(move);
                                 }
@@ -172,7 +176,9 @@ export class Board extends Component {
                                 if(validateMove(checkingMove)){
                                     if(this.pieceSymbol2PieceColor(this.state.currentPosition[checkingMove.row][checkingMove.col]) != pieceColor){
                                         possibleMoves.push(checkingMove);
-                                       
+                                        if(this.pieceSymbol2PieceColor(this.state.currentPosition[checkingMove.row][checkingMove.col]) == enemyColor){
+                                            break;
+                                        }
                                     }
                                     else{
                                         break;
@@ -205,6 +211,9 @@ export class Board extends Component {
                                 if(validateMove(checkingMove)){
                                     if(this.pieceSymbol2PieceColor(this.state.currentPosition[checkingMove.row][checkingMove.col]) != pieceColor){
                                         possibleMoves.push(checkingMove);
+                                        if(this.pieceSymbol2PieceColor(this.state.currentPosition[checkingMove.row][checkingMove.col]) == enemyColor){
+                                            break;
+                                        }
                                        
                                     }
                                     else{
@@ -224,7 +233,9 @@ export class Board extends Component {
                                 if(validateMove(checkingMove)){
                                     if(this.pieceSymbol2PieceColor(this.state.currentPosition[checkingMove.row][checkingMove.col]) != pieceColor){
                                         possibleMoves.push(checkingMove);
-                                       
+                                        if(this.pieceSymbol2PieceColor(this.state.currentPosition[checkingMove.row][checkingMove.col]) == enemyColor){
+                                            break;
+                                        }
                                     }
                                     else{
                                         break;
@@ -291,15 +302,10 @@ export class Board extends Component {
                 // wykonaj ruch
                 let newPosition = this.state.currentPosition;
                 newPosition[to.row][to.col] = this.state.currentPosition[from.row][from.col];
-                
                 newPosition[from.row][from.col] = null;
 
                 this.state.positions.push( this.arrayToFEN(newPosition) );
-
-                // this.state.currentPosition = newPosition;
-
-
-                // this.setState((prevState)=>{return {positions: prevState.positions.push(this.arrayToFEN(newPosition))}});
+                this.state.colorOnMove = this.state.colorOnMove == ENUMS.CHESS_COLOR.WHITE ? ENUMS.CHESS_COLOR.BLACK : ENUMS.CHESS_COLOR.WHITE;
                 this.setState({currentPosition: newPosition});
 
             }
@@ -319,14 +325,6 @@ export class Board extends Component {
     }
 
     render() {
-        // let startingPositionFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-        // let startingPositionFEN = "1rbqr1k1/2p1bpp1/2np1n1p/1p1Np3/4P3/1B1P1N1P/1PP2PP1/R1BQR1K1 b - - 3 13";
-        // let startingPositionFEN = "8/5p2/2p5/4n3/6p1/3p4/8/1K4k1 w - - 0 1";
-        // let magnus_nepo_game9 = "r2rb1k1/1Bp2pp1/4p3/4P2p/2P3nP/1N4P1/P4P2/R3R1K1 b - - 0 26";
-        // let magnus_nepo_game10 = "4r1k1/pp4np/2p1b3/3p1pp1/3P2P1/2PB1P1P/PP2NK2/R7 b - - 0 25";
-        // let magnus_nepo_game7 = "1rbqr1k1/2p1bpp1/2np1n1p/1p1Np3/4P3/1B1P1N1P/1PP2PP1/R1BQR1K1 b - - 3 13";
-
-        // this.fenAnalis(this.state.positions[this.state.positions.length-1]);
         let squares = [];
 
         for (let row = 0; row < 8; row++) {
@@ -334,7 +332,7 @@ export class Board extends Component {
             for (let col = 0; col < 8; col++) {
                 let color = (row + col) % 2 == 1 ? ENUMS.CHESS_COLOR.BLACK : ENUMS.CHESS_COLOR.WHITE;
                 // pieceSymbol -> p - pawn, r - rook, R - rook etc. ...
-                let pieceSymbol = this.state.currentPosition[row][col];
+                let piece = this.state.currentPosition[row][col];
 
                 let isPossibleMoveSquare = false;
                 for(let move of this.state.possibleMoves){
@@ -346,10 +344,10 @@ export class Board extends Component {
                 // create square | color -> squareColor
                 squares[row].push(<Square
                     color={color}
-                    pieceSymbol={pieceSymbol}
+                    piece={piece}
                     isPossibleMoveSquare={isPossibleMoveSquare}
                     checkMove={()=>{
-                            this.manageMove(new Cords(row,col),ENUMS.CHESS_COLOR.WHITE);
+                            this.manageMove(new Cords(row,col),this.state.colorOnMove);
                             // this.getPossibleMoves(new Cords(row,col),ENUMS.CHESS_COLOR.WHITE))
                     }}
                 ></Square>);
