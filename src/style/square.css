@@ -1,0 +1,11 @@
+.square{
+    width: 100px; height: 100px;
+    display: grid;
+    place-items: center;
+}
+.square--white{
+    background-color: rgb(240, 219, 151);
+}
+.square--black{
+    background-color: rgb(197, 168, 89);
+}
