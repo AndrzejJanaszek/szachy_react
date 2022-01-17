@@ -9,3 +9,6 @@
 .square--black{
     background-color: rgb(197, 168, 89);
 }
+.square--possible{
+    background-color: rgb(121, 201, 226);
+}
