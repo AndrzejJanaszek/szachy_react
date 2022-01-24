@@ -27,33 +27,60 @@ export default function GameManager() {
         // moveNr : number
     // }
 
+    function resetPossibleMoves(){
+        setPossibleMoves([]);
+    }
+
     // UI functions
     function goToStart(){
         setCurrentMoveNr(0);
+        resetPossibleMoves()
     }
     function goOneForward(){
         if(currentMoveNr+1 < gameHistory.length){
             setCurrentMoveNr(currentMoveNr+1);
+            resetPossibleMoves()
         }
     }
     function goOneBack(){
         if(currentMoveNr-1>=0){
             setCurrentMoveNr(currentMoveNr-1);
+            resetPossibleMoves()
         }
     }
     function goToEnd(){
         setCurrentMoveNr(gameHistory.length-1);
+        resetPossibleMoves()
     }
 
-    //moves
-
+    // helper functions
     function areCordsOnBoard(cords){
         if(cords.row < 0 || cords.row > 7 || cords.col < 0 || cords.col > 7){
             return false;
         }
         return true;
     }
-    
+
+    function isCheck(positionArr, attackingColor){
+        let king = undefined;
+        for(let row = 0; row < 8; row++){
+            for(let col = 0; col < 8; col++){
+                if(positionArr[row][col] instanceof Piece && positionArr[row][col].type == ENUM.PIECE_TYPE.KING && positionArr[row][col].color != attackingColor){
+                    king = new Cords(row, col);
+                }
+            }
+        }
+
+        // console.log(getAllSquaresUnderAttack(positionArr, attackingColor));
+        console.log(positionArr);
+        if(getAllSquaresUnderAttack(positionArr, attackingColor)[king.row][king.col]){
+            return true;
+        }
+
+        return false;
+        
+    }
+
     function genFEN(posArr, color, castles, enPassant, TOP, moveNr){
         // return FEN
         // posArr, newPositon
@@ -74,6 +101,7 @@ export default function GameManager() {
                 if(posArr[row][col] instanceof Piece){
                     if(emptySquares > 0){
                         strPos += emptySquares;
+                        emptySquares = 0;
                     }
                     strPos += posArr[row][col].symbol;
                 }
@@ -88,7 +116,7 @@ export default function GameManager() {
             if(row != 7)strPos+="/";
         }
 
-        fenColor = color = ENUM.CHESS_COLOR.WHITE ? "w" : "b";
+        fenColor = color == ENUM.CHESS_COLOR.WHITE ? "w" : "b";
         fenCastles= castles;
         fenEnPassant = enPassant;
         fenTOP = TOP;
@@ -97,7 +125,13 @@ export default function GameManager() {
         return (strPos +" "+ fenColor +" "+ fenCastles +" "+ fenEnPassant +" "+ fenTOP +" "+ fenMoveNr);
     }
 
-    function squaresUnderPieceAttack(piece, cords){
+    
+    
+
+    
+    
+
+    function squaresUnderPieceAttack(piece, cords, possitionArr){
         let finalSquares = [];
         switch (piece.type) {
             case ENUM.PIECE_TYPE.PAWN:
@@ -120,7 +154,7 @@ export default function GameManager() {
                         if(areCordsOnBoard(move)){
                             finalSquares.push(move);
 
-                            if(position[move.row][move.col] instanceof Piece){
+                            if(possitionArr[move.row][move.col] instanceof Piece){
                                 // break direction loop
                                 break;
                             }
@@ -147,7 +181,7 @@ export default function GameManager() {
                         if(areCordsOnBoard(move)){
                             finalSquares.push(move);
 
-                            if(position[move.row][move.col] instanceof Piece){
+                            if(possitionArr[move.row][move.col] instanceof Piece){
                                 // break direction loop
                                 break;
                             }
@@ -166,7 +200,7 @@ export default function GameManager() {
                         if(areCordsOnBoard(move)){
                             finalSquares.push(move);
 
-                            if(position[move.row][move.col] instanceof Piece){
+                            if(possitionArr[move.row][move.col] instanceof Piece){
                                 // break direction loop
                                 break;
                             }
@@ -190,36 +224,110 @@ export default function GameManager() {
         return finalSquares;
     }
 
-    function makeMove(cords){
+    function getPositionAfterMove(curPos, move, moveingPieceCords){
+        // tymczasowo tylko przestawienie figury, move traktujemy jako cords
+        let newPositon = clone2DArray(curPos);
+        newPositon[move.row][move.col] = curPos[moveingPieceCords.row][moveingPieceCords.col];
+        newPositon[moveingPieceCords.row][moveingPieceCords.col] = null;
+
+        return newPositon;
+    }
+
+    //moves
+    function makeMoveOnBoard(cords){
         // add new FEN to gameHistory
         // new FenObject();
 
+
+        // move | castle | promotion | enpassant
         let newPositon = position;
         newPositon[cords.row][cords.col] = activePiece;
-        newPositon[activePiecePosition.row][activePiecePosition.row] = null;
+        newPositon[activePiecePosition.row][activePiecePosition.col] = null;
 
-        genFEN(newPositon, activePiece.getEnemyColor, "TODO", "TODO", "TODO", currentMoveNr);
+        let newGameHistory = gameHistory;
+        newGameHistory.push(genFEN(newPositon, activePiece.getEnemyColor(), "TODO", "TODO", "TODO", currentMoveNr));
 
-        setCurrentMoveNr(currentMoveNr+1)
+        setGameHistory(newGameHistory); 
+        resetPossibleMoves();
+        setActivePiece(null);
+        setColorOnMove( ()=>( colorOnMove == ENUM.CHESS_COLOR.WHITE ? ENUM.CHESS_COLOR.BLACK: ENUM.CHESS_COLOR.WHITE ));
+        setCurrentMoveNr(currentMoveNr+1);
     }
+
+    function getAllSquaresUnderAttack(positionArr, attackingColor){
+        let finalArray = [
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,]
+        ];
+        for(let row = 0; row < 8; row++){
+            for(let col = 0; col < 8; col++){
+                let checkingPiece = positionArr[row][col];
+                if(checkingPiece instanceof Piece && checkingPiece.color == attackingColor){
+                    for(let square of squaresUnderPieceAttack(checkingPiece,new Cords(row,col), positionArr)){
+                        finalArray[square.row][square.col] = true;
+                    }
+                }
+                
+            }
+        }
+        return finalArray;
+    }
+   
     
     function getPossibleMoves(piece, cords) {
         const finalMoves = [];
+        let tryMoves = squaresUnderPieceAttack(piece, cords, position);
+
         if (piece.color == colorOnMove) {
-            const tryMoves = squaresUnderPieceAttack(piece, cords);
+            if(piece.type == ENUM.PIECE_TYPE.PAWN){
+
+                let pawnMoves = [];
+                for(let move of tryMoves){
+                    if(position[move.row][move.col] instanceof Piece && position[move.row][move.col].color != piece.color){
+                        // gucci
+                        pawnMoves.push(move);
+                    }
+                }
+                tryMoves = pawnMoves;
+
+                let colorDir = piece.color == ENUM.CHESS_COLOR.WHITE ? -1 : 1;
+                let colorFirst = piece.color == ENUM.CHESS_COLOR.WHITE ? 6 : 1;
+                
+                if(cords.row == colorFirst){
+                    let dMove = cords.add( new Cords(2*colorDir, 0) );
+                    if(!(position[dMove.row][dMove.col] instanceof Piece)){
+                        tryMoves.push(dMove);
+                    }
+                }
+
+                let oneMove = cords.add(new Cords(1*colorDir, 0));
+                if( !(position[oneMove.row][oneMove.col] instanceof Piece) ){
+                    tryMoves.push(cords.add(new Cords(1*colorDir, 0)));
+                }
+            }
 
             // move : Cords()
             for (let move of tryMoves) {
                 // ally?
-                if (position[move.row][move.col] instanceof Piece && position[move.row][move.col].color == piece.color) {
-                    // dont add
-                }
-                else {
-                    // add move
-                    finalMoves.push(move);
+                if (!(position[move.row][move.col] instanceof Piece && position[move.row][move.col].color == piece.color)) {
+                    // console.log(getPositionAfterMove(position, move, cords));
+                    if(!isCheck(getPositionAfterMove(position, move, cords), piece.getEnemyColor())){
+                        // add move
+                        finalMoves.push(move);
+                    }
+
+
                 }
 
             }
+
+
 
             // ally?
             // związanie
@@ -229,35 +337,54 @@ export default function GameManager() {
 
     }
 
-    function manageMove(squareCords){
+    function manageMove(squareCords) {
+        if (currentMoveNr == gameHistory.length - 1) {
+            if (position[squareCords.row][squareCords.col] instanceof Piece && position[squareCords.row][squareCords.col].color == colorOnMove) {
+                // we're taking a piece
+                setActivePiece(position[squareCords.row][squareCords.col]);
+                setActivePiecePosition(squareCords);
+                setPossibleMoves(getPossibleMoves(position[squareCords.row][squareCords.col], squareCords));
+            }
+            else {
+                // we're taping a square / trying make a move
 
-        if(position[squareCords.row][squareCords.col] instanceof Piece){
-            // we're taking a piece
-            setActivePiece(position[squareCords.row][squareCords.col]);
-            setActivePiecePosition(squareCords);
-            setPossibleMoves(getPossibleMoves(position[squareCords.row][squareCords.col], squareCords));
-        }
-        else{
-            // we're taping a square / trying make a move
+                let isPossible = false;
+                for (let move of possibleMoves) {
+                    if (move.equals(squareCords)) {
+                        isPossible = true;
+                        makeMoveOnBoard(move);
+                    }
+                }
 
-            let isPossible = false;
-            for(let move of possibleMoves){
-                if(move.equals(squareCords)){
-                    isPossible = true;
-                    makeMove(move);
+                if (!isPossible) {
+                    resetPossibleMoves();
                 }
             }
 
-            if(!isPossible){
-                setPossibleMoves([]);
+        }
+    }
+
+useEffect(() => {
+    return () => {
+        // console.log(position);    
+    }
+})
+
+    function clone2DArray(twoDimArr){
+        let newArr = [];
+        for(let i = 0; i < twoDimArr.length;i++){
+            newArr[i]=[];
+            for(let j = 0; j < twoDimArr[i].length; j++){
+                newArr[i][j] = twoDimArr[i][j];
             }
         }
+        return newArr
     }
 
     return (
         <div>
             {/* TODO: 
-                do Board dajemy 2 metody: getMove() makeMove()
+                do Board dajemy 2 metody: getMove() makeMoveOnBoard()
                 + potrzebne state robimy i to powinno dać możliwość robienia ruchów
                 uwaga: problem bedzie dotyczył dobrego napisania metody odpowiedzialnej za robienie ruchu - musi przekawyzać dane o en passant, roszadach itd.
             */}

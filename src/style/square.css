@@ -2,6 +2,7 @@
     width: 100px; height: 100px;
     display: grid;
     place-items: center;
+    position: relative;
 }
 .square--white{
     background-color: rgb(240, 219, 151);
@@ -9,6 +10,25 @@
 .square--black{
     background-color: rgb(197, 168, 89);
 }
-.square--possible{
-    background-color: rgb(121, 201, 226);
+.square--possible::after{
+    position: absolute;
+    top: 50%;left: 50%;
+    transform: translate(-50%,-50%);
+    content: "";
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 50%;
+    background-color: rgb(15, 18, 49);
+    /* background-color: rgb(121, 201, 226); */
+}
+
+.square--possible_capture::after{
+    position: absolute;
+    top: 50%;left: 50%;
+    transform: translate(-50%,-50%);
+    content: "";
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background-color: rgb(185, 64, 90);
 }
