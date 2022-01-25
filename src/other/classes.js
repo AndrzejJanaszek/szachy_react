@@ -168,8 +168,53 @@ export class Move{
             this.promotionPiece = piece;
             this.promotion = true;
         }
+        this.setCastle = (fromRook, fromKing, toRook, toKing, color)=>{
+            this.castleObj = {
+                fromRook : fromRook,
+                fromKing : fromKing,
+                toRook : toRook,
+                toKing : toKing,
+                color : color,
+            }
+        }
         this.clone = ()=>{
             return new Move(this.from, this.to, this.enPassant, this.castle, this.promotion, this.TOP);
         }
+    }
+}
+
+export class Castles{
+    constructor(castleFen){
+        this.whiteKing= false;
+        this.whiteQueen = false;
+        this.blackKing= false;
+        this.blackQueen = false;
+        this.setValues = (castleFen)=>{
+            for(let i = 0; i < castleFen.length;i++){
+                if(castleFen[i] == "K"){
+                    this.whiteKing = true;
+                }
+                else if(castleFen[i] == "Q"){
+                    this.whiteQueen = true;
+                }
+                else if(castleFen[i] == "k"){
+                    this.blackKing = true;
+                }
+                else if(castleFen[i] == "q"){
+                    this.blackQueen = true;
+                }
+            }
+        }
+        this.getFen = ()=>{
+            let cFen = "";
+            cFen += this.whiteKing ? "K": "";
+            cFen += this.whiteQueen ? "Q": "";
+            cFen += this.blackKing ? "k": "";
+            cFen += this.blackQueen ? "q": "";
+            return cFen;
+        }
+
+
+        this.setValues(castleFen);
     }
 }
