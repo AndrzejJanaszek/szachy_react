@@ -8,24 +8,14 @@ import Board from './Board'
 export default function GameManager() {
 
     // const [gameHistory, setGameHistory] = useState(["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1","rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1","rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2","rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2","r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"]);
-    const [gameHistory, setGameHistory] = useState(["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"]);
+    // const [gameHistory, setGameHistory] = useState(["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"]);
+    const [gameHistory, setGameHistory] = useState(["8/P4k2/4ppp1/8/8/4PP2/4KN2/2RR4 w - - 0 1"]);
     const [currentMoveNr, setCurrentMoveNr] = useState(0);
     const [position, setPosition] = useState(new FenObject(gameHistory[currentMoveNr]).positionArr);
     const [possibleMoves, setPossibleMoves] = useState([]);
-    const [activePiece, setActivePiece] = useState(null)
-    const [activePiecePosition, setActivePiecePosition] = useState(null)
-    const [colorOnMove, setColorOnMove] = useState(ENUM.CHESS_COLOR.WHITE)
-    // function fenToObject(fen){
-        // positions: ["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"],
-        // const arrFen = fen.split(" ");
-
-        // 1: fen to position : Array 8x8
-        // onMove : str.ENUM {WHITE, BLACK}
-        // castles : str for eg. "KQkq"
-        // en passant : str  for eg. e3
-        // TOP : number
-        // moveNr : number
-    // }
+    const [activePiece, setActivePiece] = useState(null);
+    const [activePiecePosition, setActivePiecePosition] = useState(null);
+    const [colorOnMove, setColorOnMove] = useState(ENUM.CHESS_COLOR.WHITE);
 
     function resetPossibleMoves(){
         setPossibleMoves([]);
@@ -54,6 +44,17 @@ export default function GameManager() {
     }
 
     // helper functions
+    function clone2DArray(twoDimArr){
+        let newArr = [];
+        for(let i = 0; i < twoDimArr.length;i++){
+            newArr[i]=[];
+            for(let j = 0; j < twoDimArr[i].length; j++){
+                newArr[i][j] = twoDimArr[i][j];
+            }
+        }
+        return newArr
+    }
+
     function areCordsOnBoard(cords){
         if(cords.row < 0 || cords.row > 7 || cords.col < 0 || cords.col > 7){
             return false;
@@ -306,8 +307,6 @@ export default function GameManager() {
             newPositon[activePiecePosition.row][activePiecePosition.col] = null;
         }
 
-
-
         let newGameHistory = gameHistory;
         newGameHistory.push(genFEN(newPositon, activePiece.getEnemyColor(), "TODO", "TODO", "TODO", currentMoveNr));
 
@@ -352,7 +351,8 @@ export default function GameManager() {
                 // checking promotion
                 let tmpMoves = [];
                 for(let move of tryMoves){
-                    if((move.row == 0 && piece.color == ENUM.CHESS_COLOR.BLACK) || (move.row == 7 && piece.color == ENUM.CHESS_COLOR.WHITE)){
+                    if((move.to.row == 0 && piece.color == ENUM.CHESS_COLOR.WHITE) || 
+                    (move.to.row == 7 && piece.color == ENUM.CHESS_COLOR.BLACK)){
                         // promotion
                         let tmp = move;
                         move.promotion = true;
@@ -401,8 +401,8 @@ export default function GameManager() {
             // związanie
             // FOR KING: isDefended?  ---- roszady
         }
+        
         return finalMoves;
-
     }
 
     function manageMove(squareCords) {
@@ -422,7 +422,7 @@ export default function GameManager() {
                         isPossible = true;
 
                         if(move.promotion){
-                            if( confirm("promotion?") ){
+                            if( true ){
                                 let nPiece = new Piece();
                                 nPiece.initByValues(ENUM.PIECE_TYPE.QUEEN, colorOnMove)
 
@@ -451,19 +451,26 @@ export default function GameManager() {
 useEffect(() => {
     return () => {
         isGameEnd(position);
-        // console.log(position);    
+        // console.log(possibleMoves);
     }
 })
 
-    function clone2DArray(twoDimArr){
-        let newArr = [];
-        for(let i = 0; i < twoDimArr.length;i++){
-            newArr[i]=[];
-            for(let j = 0; j < twoDimArr[i].length; j++){
-                newArr[i][j] = twoDimArr[i][j];
-            }
-        }
-        return newArr
+    // NEW FUNCTIONS FOR REWRITE
+    function onPieceClick(piece, cords){
+        setActivePiece(piece);
+        // setActivePiece(position[cords.row][cords.col]);
+        setActivePiecePosition(cords);
+        setPossibleMoves(getPossibleMoves(piece, cords));
+    }
+
+
+    // TODO: W sumie nie potrzebne dodatkowe funkcje - można je wywalić i dać bezpośrednio "makeMoveOnBoard" i "resetPossibleMoves"
+    function onPossibleSquareClick(move){
+        makeMoveOnBoard(move);
+    }
+
+    function onEmptySquareClick(){
+        resetPossibleMoves();
     }
 
     return (
@@ -474,8 +481,12 @@ useEffect(() => {
                 uwaga: problem bedzie dotyczył dobrego napisania metody odpowiedzialnej za robienie ruchu - musi przekawyzać dane o en passant, roszadach itd.
             */}
             <Board 
+            colorOnMove={colorOnMove}
+            onPieceClick={onPieceClick}
+            onPossibleSquareClick={onPossibleSquareClick}
+            onEmptySquareClick={onEmptySquareClick}
             possibleMoves={possibleMoves}
-            manageMove={manageMove}
+            // manageMove={manageMove}
             position={new FenObject(gameHistory[currentMoveNr]).positionArr}/>
 
             <button onClick={goToStart}>{"<<<"}</button>

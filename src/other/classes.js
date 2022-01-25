@@ -68,7 +68,7 @@ export class Piece{
                     break;
             }
             if(this.color == ENUM.CHESS_COLOR.WHITE){
-                this.symbol.toUpperCase();
+                this.symbol = this.symbol.toUpperCase();
             }
         }
         this.isPiceSymbol = symbol=>{
@@ -167,6 +167,9 @@ export class Move{
         this.setPromotion = (piece)=>{
             this.promotionPiece = piece;
             this.promotion = true;
+        }
+        this.clone = ()=>{
+            return new Move(this.from, this.to, this.enPassant, this.castle, this.promotion, this.TOP);
         }
     }
 }

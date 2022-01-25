@@ -1,0 +1,31 @@
+.promotionList{
+    background-color: rgba(0, 51, 9, 0.5);
+    z-index: 100;
+    margin: 0;padding: 0;
+    width: 100%;
+    list-style-type: none;
+}
+.promotionList__element{
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin: 0;padding: 0;
+    width: 100px;height: 100px;
+}
+.promotionList__element > *{
+    z-index: 2;
+}
+.promotionList__element::after{
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    content: "";
+    width: 100%;
+    height: 100%;
+    border-radius: 35%;
+    background-color: rgba(255,255,255,0.4);
+}
+.promotionList__element:hover::after{
+    background-color: rgba(255,255,255,0.7);
+}
