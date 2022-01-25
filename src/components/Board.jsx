@@ -12,7 +12,7 @@ export default function Board({position, manageMove, possibleMoves}) {
         for(let j = 0; j < 8; j++){
             let isPossibleSquare = false;
             for(let move of possibleMoves){
-                if(move.equals(new Cords(i,j))){
+                if(move.to.equals(new Cords(i,j))){
                     isPossibleSquare = true;
                     break;
                 }

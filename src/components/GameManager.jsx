@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useEffect } from 'react/cjs/react.development';
-import { Cords, FenObject, Piece } from '../other/classes';
+import { Cords, FenObject, Move, Piece } from '../other/classes';
 import ENUM from '../other/enum';
 import PIECE_MOVES from '../other/pieceMoves';
 import Board from './Board'
@@ -71,8 +71,6 @@ export default function GameManager() {
             }
         }
 
-        // console.log(getAllSquaresUnderAttack(positionArr, attackingColor));
-        console.log(positionArr);
         if(getAllSquaresUnderAttack(positionArr, attackingColor)[king.row][king.col]){
             return true;
         }
@@ -124,12 +122,31 @@ export default function GameManager() {
 
         return (strPos +" "+ fenColor +" "+ fenCastles +" "+ fenEnPassant +" "+ fenTOP +" "+ fenMoveNr);
     }
-
     
-    
-
-    
-    
+    function getAllSquaresUnderAttack(positionArr, attackingColor){
+        let finalArray = [
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,],
+            [false,false,false,false,false,false,false,false,]
+        ];
+        for(let row = 0; row < 8; row++){
+            for(let col = 0; col < 8; col++){
+                let checkingPiece = positionArr[row][col];
+                if(checkingPiece instanceof Piece && checkingPiece.color == attackingColor){
+                    for(let square of squaresUnderPieceAttack(checkingPiece,new Cords(row,col), positionArr)){
+                        finalArray[square.row][square.col] = true;
+                    }
+                }
+                
+            }
+        }
+        return finalArray;
+    }
 
     function squaresUnderPieceAttack(piece, cords, possitionArr){
         let finalSquares = [];
@@ -227,22 +244,69 @@ export default function GameManager() {
     function getPositionAfterMove(curPos, move, moveingPieceCords){
         // tymczasowo tylko przestawienie figury, move traktujemy jako cords
         let newPositon = clone2DArray(curPos);
-        newPositon[move.row][move.col] = curPos[moveingPieceCords.row][moveingPieceCords.col];
+        newPositon[move.to.row][move.to.col] = curPos[moveingPieceCords.row][moveingPieceCords.col];
         newPositon[moveingPieceCords.row][moveingPieceCords.col] = null;
 
         return newPositon;
     }
 
+    function isGameEnd(positionArr){
+        let isMovePossible = false;
+        loop:{
+        for(let row = 0; row < 8; row++){
+            for(let col= 0; col< 8; col++){
+                if(positionArr[row][col] instanceof Piece){
+                    let moves = getPossibleMoves(positionArr[row][col], new Cords(row, col))
+                    if(moves.length > 0){
+                        isMovePossible = true;
+                        break loop;
+                    }
+                }
+            }
+        }
+        }
+
+        if(!isMovePossible){
+            let attackingColor = colorOnMove == ENUM.CHESS_COLOR.WHITE ? ENUM.CHESS_COLOR.BLACK : ENUM.CHESS_COLOR.WHITE;
+            if(isCheck(positionArr, attackingColor)){
+                // mate
+                console.log("KONIEC GRY: MAT");
+                console.log("WYGRAŁY");
+                console.log(attackingColor);
+            }
+            else{
+                // pat
+                console.log("KONIEC GRY: PAT");
+            }
+        }
+
+        /* if(){
+            // looking for mate
+        }
+        else{
+            // looking for pat
+        } */
+        
+    }
+
     //moves
-    function makeMoveOnBoard(cords){
+    function makeMoveOnBoard(move){
         // add new FEN to gameHistory
         // new FenObject();
 
 
         // move | castle | promotion | enpassant
         let newPositon = position;
-        newPositon[cords.row][cords.col] = activePiece;
-        newPositon[activePiecePosition.row][activePiecePosition.col] = null;
+        if(move.promotion){
+            newPositon[move.to.row][move.to.col] = move.promotionPiece;
+            newPositon[activePiecePosition.row][activePiecePosition.col] = null;
+        }
+        else{
+            newPositon[move.to.row][move.to.col] = activePiece;
+            newPositon[activePiecePosition.row][activePiecePosition.col] = null;
+        }
+
+
 
         let newGameHistory = gameHistory;
         newGameHistory.push(genFEN(newPositon, activePiece.getEnemyColor(), "TODO", "TODO", "TODO", currentMoveNr));
@@ -254,75 +318,79 @@ export default function GameManager() {
         setCurrentMoveNr(currentMoveNr+1);
     }
 
-    function getAllSquaresUnderAttack(positionArr, attackingColor){
-        let finalArray = [
-            [false,false,false,false,false,false,false,false,],
-            [false,false,false,false,false,false,false,false,],
-            [false,false,false,false,false,false,false,false,],
-            [false,false,false,false,false,false,false,false,],
-            [false,false,false,false,false,false,false,false,],
-            [false,false,false,false,false,false,false,false,],
-            [false,false,false,false,false,false,false,false,],
-            [false,false,false,false,false,false,false,false,]
-        ];
-        for(let row = 0; row < 8; row++){
-            for(let col = 0; col < 8; col++){
-                let checkingPiece = positionArr[row][col];
-                if(checkingPiece instanceof Piece && checkingPiece.color == attackingColor){
-                    for(let square of squaresUnderPieceAttack(checkingPiece,new Cords(row,col), positionArr)){
-                        finalArray[square.row][square.col] = true;
-                    }
-                }
-                
-            }
-        }
-        return finalArray;
-    }
-   
-    
     function getPossibleMoves(piece, cords) {
         const finalMoves = [];
-        let tryMoves = squaresUnderPieceAttack(piece, cords, position);
+        let trySquares = squaresUnderPieceAttack(piece, cords, position);
+        let tryMoves = [];//squaresUnderPieceAttack(piece, cords, position);
 
         if (piece.color == colorOnMove) {
             if(piece.type == ENUM.PIECE_TYPE.PAWN){
 
-                let pawnMoves = [];
-                for(let move of tryMoves){
+                for(let move of trySquares){
                     if(position[move.row][move.col] instanceof Piece && position[move.row][move.col].color != piece.color){
                         // gucci
-                        pawnMoves.push(move);
+                        tryMoves.push( new Move(cords, move, false, false, false, true));
+                        // pawnMoves.push(move);
                     }
                 }
-                tryMoves = pawnMoves;
 
                 let colorDir = piece.color == ENUM.CHESS_COLOR.WHITE ? -1 : 1;
                 let colorFirst = piece.color == ENUM.CHESS_COLOR.WHITE ? 6 : 1;
                 
-                if(cords.row == colorFirst){
-                    let dMove = cords.add( new Cords(2*colorDir, 0) );
-                    if(!(position[dMove.row][dMove.col] instanceof Piece)){
-                        tryMoves.push(dMove);
+                // +1 +2 (forward) moves
+                let oneMove = cords.add(new Cords(1*colorDir, 0));
+                if( !(position[oneMove.row][oneMove.col] instanceof Piece) ){
+                    tryMoves.push( new Move(cords, oneMove, false, false, false, true));
+                    if(cords.row == colorFirst){
+                        let dMove = cords.add( new Cords(2*colorDir, 0) );
+                        if(!(position[dMove.row][dMove.col] instanceof Piece)){
+                            tryMoves.push( new Move(cords, dMove, true, false, false, true));
+                        }
                     }
                 }
 
-                let oneMove = cords.add(new Cords(1*colorDir, 0));
-                if( !(position[oneMove.row][oneMove.col] instanceof Piece) ){
-                    tryMoves.push(cords.add(new Cords(1*colorDir, 0)));
+                // checking promotion
+                let tmpMoves = [];
+                for(let move of tryMoves){
+                    if((move.row == 0 && piece.color == ENUM.CHESS_COLOR.BLACK) || (move.row == 7 && piece.color == ENUM.CHESS_COLOR.WHITE)){
+                        // promotion
+                        let tmp = move;
+                        move.promotion = true;
+                        tmpMoves.push(tmp);
+                    }
+                    else{
+                        tmpMoves.push(move);
+                    }
+                }
+                tryMoves = tmpMoves;
+
+
+
+            }else if(piece.type == ENUM.PIECE_TYPE.KING){
+                for(let sq of trySquares){
+                    tryMoves.push(new Move(cords, sq, false, false, false, false));
+                }
+            }
+            else{
+                for(let sq of trySquares){
+                    tryMoves.push(new Move(cords, sq, false, false, false, false));
                 }
             }
 
-            // move : Cords()
+            // move : Cords() _____ sqCords -> squareCords
             for (let move of tryMoves) {
                 // ally?
-                if (!(position[move.row][move.col] instanceof Piece && position[move.row][move.col].color == piece.color)) {
-                    // console.log(getPositionAfterMove(position, move, cords));
+                if (!(position[move.to.row][move.to.col] instanceof Piece && position[move.to.row][move.to.col].color == piece.color)) {
+                    // is not pinned
                     if(!isCheck(getPositionAfterMove(position, move, cords), piece.getEnemyColor())){
                         // add move
-                        finalMoves.push(move);
+                        if(position[move.to.row][move.to.col] instanceof Piece && position[move.to.row][move.to.col].color != piece.color){
+                            finalMoves.push(new Move(cords, move.to, move.enPassant, move.castle, move.promotion, true));
+                        }
+                        else{
+                            finalMoves.push(move);
+                        }
                     }
-
-
                 }
 
             }
@@ -350,9 +418,25 @@ export default function GameManager() {
 
                 let isPossible = false;
                 for (let move of possibleMoves) {
-                    if (move.equals(squareCords)) {
+                    if (move.to.equals(squareCords)) {
                         isPossible = true;
-                        makeMoveOnBoard(move);
+
+                        if(move.promotion){
+                            if( confirm("promotion?") ){
+                                let nPiece = new Piece();
+                                nPiece.initByValues(ENUM.PIECE_TYPE.QUEEN, colorOnMove)
+
+                                move.setPromotion(nPiece);
+                                makeMoveOnBoard(move);
+                            }
+                            else{
+                                isPossible = false;
+                            }
+                        }
+                        else{
+                            makeMoveOnBoard(move);
+                        }
+
                     }
                 }
 
@@ -366,6 +450,7 @@ export default function GameManager() {
 
 useEffect(() => {
     return () => {
+        isGameEnd(position);
         // console.log(position);    
     }
 })

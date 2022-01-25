@@ -153,3 +153,20 @@ export class Cords{
         }
     }
 }
+
+export class Move{
+    // from, to : Cords()
+    constructor(from ,to , enPassant, castle, promotion, TOP){
+        this.from = from;
+        this.to = to;
+        this.enPassant = enPassant;
+        this.castle = castle;
+        this.promotion = promotion;
+        this.TOP = TOP;
+        this.promotionPiece = null;
+        this.setPromotion = (piece)=>{
+            this.promotionPiece = piece;
+            this.promotion = true;
+        }
+    }
+}
