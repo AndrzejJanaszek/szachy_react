@@ -1,6 +1,16 @@
-.board{
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    width: fit-content;
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: fit-content;
+  height: fit-content;
+  border: 3px solid black;
+  box-shadow: 0 0 1.3rem rgba(0, 0, 0, 0.3);
+}
+.gameView {
+  display: grid;
+}
+.player {
+  padding: 0.3rem;
+  font-size: 1.2rem;
 }

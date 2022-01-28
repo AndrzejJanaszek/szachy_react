@@ -4,12 +4,16 @@ import { Castles, Cords, FenObject, Move, Piece } from "../other/classes";
 import ENUM from "../other/enum";
 import PIECE_MOVES from "../other/pieceMoves";
 import Board from "./Board";
+import SidePanel from "./SidePanel";
+
+import "../style/game_manager.css";
 
 export default function GameManager() {
   // const [gameHistory, setGameHistory] = useState(["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1","rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1","rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2","rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2","r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"]);
   const [gameHistory, setGameHistory] = useState([
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   ]);
+  const [movesList, setMovesList] = useState("");
   // const [gameHistory, setGameHistory] = useState([
   //   "r3k2r/pppbqppp/2nb1n2/3pp3/3PP3/2NB1N2/PPPBQPPP/R3K2R w KQkq - 4 10",
   // ]);
@@ -50,8 +54,90 @@ export default function GameManager() {
 
   // helper functions
 
+  /* function markCurrentMove() {
+    if (movesList.length > 0) {
+      let newList = movesList.split(" ");
+      for (let i = 0; i < newList.length; i++) {
+        if (newList[i][0] == "{") {
+          newList[i] = newList[i].slice(1, newList[i].length - 1);
+        }
+      }
+      newList[currentMoveNr - 1] = "{" + newList[currentMoveNr - 1] + "}";
+      setMovesList(newList.join(" "));
+    }
+  } */
+
+  function getMoveNotation(move) {
+    if (move.castle) {
+      if (
+        move.castleObj.fromRook.equals(new Cords(0, 0)) ||
+        move.castleObj.fromRook.equals(new Cords(7, 0))
+      ) {
+        // O-O-O
+        return "O-O-O";
+      } else {
+        // O-O
+        return "O-O";
+      }
+    } else {
+      if (move.TOP) {
+        if (
+          move.piece.type == ENUM.PIECE_TYPE.PAWN &&
+          move.from.col != move.to.col
+        ) {
+          // PAWN
+          if (move.promotion) {
+            // gxh8=Q
+            return (
+              String.fromCharCode(move.from.col + 97) +
+              "x" +
+              cordsToNotation(move.to) +
+              "=" +
+              move.promotionPiece.symbol.toUpperCase()
+            );
+          } else {
+            // dxe4
+            return (
+              String.fromCharCode(move.from.col + 97) +
+              "x" +
+              cordsToNotation(move.to)
+            );
+          }
+        } else if (move.piece.type != ENUM.PIECE_TYPE.PAWN) {
+          //FIGURE
+          // Qxb2
+          return (
+            move.piece.symbol.toUpperCase() + "x" + cordsToNotation(move.to)
+          );
+        }
+        // PAWN
+        // e4
+        return cordsToNotation(move.to);
+      } else {
+        //Nc3
+        return move.piece.symbol.toUpperCase() + cordsToNotation(move.to);
+      }
+    }
+  }
+
   function getCastlesFromFen() {
     return gameHistory[currentMoveNr].split(" ")[2];
+  }
+
+  function getEnPassantFromFen() {
+    return gameHistory[currentMoveNr].split(" ")[3];
+  }
+
+  function notationToCords(squareNot) {
+    let colNot = squareNot.charCodeAt(0) - 97;
+    let row = 8 - parseInt(squareNot[1]);
+    return new Cords(row, colNot);
+  }
+  function cordsToNotation(cords) {
+    let row, col;
+    row = 8 - cords.row;
+    col = String.fromCharCode(cords.col + 97);
+    return col + row;
   }
 
   function clone2DArray(twoDimArr) {
@@ -332,6 +418,33 @@ export default function GameManager() {
   function makeMoveOnBoard(move) {
     // add new FEN to gameHistory
     // new FenObject();
+    let piece = position[move.from.row][move.from.col];
+    let oldFen = new FenObject(gameHistory[currentMoveNr]);
+    let castleFen = oldFen.castles;
+    if (piece.type == ENUM.PIECE_TYPE.KING) {
+      let cObj = new Castles(castleFen);
+      if (piece.color == ENUM.CHESS_COLOR.WHITE) {
+        cObj.whiteKing = false;
+        cObj.whiteQueen = false;
+        castleFen = cObj.getFen();
+      } else {
+        cObj.blackKing = false;
+        cObj.blackQueen = false;
+        castleFen = cObj.getFen();
+      }
+    } else if (piece.type == ENUM.PIECE_TYPE.ROOK) {
+      let cObj = new Castles(castleFen);
+      if (move.from.equals(new Cords(0, 0))) {
+        cObj.blackQueen = false;
+      } else if (move.from.equals(new Cords(0, 7))) {
+        cObj.blackKing = false;
+      } else if (move.from.equals(new Cords(7, 0))) {
+        cObj.whiteQueen = false;
+      } else if (move.from.equals(new Cords(7, 7))) {
+        cObj.whiteKing = false;
+      }
+      castleFen = cObj.getFen();
+    }
 
     // move | castle | promotion | enpassant
     let newPositon = clone2DArray(position);
@@ -355,9 +468,13 @@ export default function GameManager() {
       newPositon[activePiecePosition.row][activePiecePosition.col] = null;
     }
 
+    let epFen = "-";
+    if (move.enPassant) {
+      epFen = cordsToNotation(move.enPassantCords);
+    }
+
     let newGameHistory = gameHistory;
-    let oldFen = new FenObject(gameHistory[currentMoveNr]);
-    let castleFen = oldFen.castles;
+
     if (move.castle) {
       let cObj = new Castles(castleFen);
       if (move.castleObj.color == ENUM.CHESS_COLOR.WHITE) {
@@ -371,17 +488,31 @@ export default function GameManager() {
       }
     }
 
+    let TOP = gameHistory[currentMoveNr].split(" ")[4];
+    if (move.TOP) {
+      TOP = 0;
+    } else {
+      TOP++;
+    }
+
     newGameHistory.push(
       genFEN(
         newPositon,
         activePiece.getEnemyColor(),
         castleFen,
-        "TODO",
-        "TODO",
-        currentMoveNr
+        epFen,
+        TOP,
+        Math.floor(currentMoveNr / 2) + 1
       )
     );
 
+    setMovesList((prev) => {
+      if (prev.trim() === "") {
+        return prev + getMoveNotation(move);
+      } else {
+        return prev + " " + getMoveNotation(move);
+      }
+    });
     setGameHistory(newGameHistory);
     resetPossibleMoves();
     setActivePiece(null);
@@ -393,7 +524,7 @@ export default function GameManager() {
     setCurrentMoveNr(currentMoveNr + 1);
   }
 
-  function getPossibleMoves(piece, cords, castles = "-") {
+  function getPossibleMoves(piece, cords, castles = "-", enPassant = "-") {
     const finalMoves = [];
     let trySquares = squaresUnderPieceAttack(piece, cords, position);
     let tryMoves = []; //squaresUnderPieceAttack(piece, cords, position);
@@ -407,7 +538,9 @@ export default function GameManager() {
             position[move.row][move.col].color != piece.color
           ) {
             // gucci
-            tryMoves.push(new Move(cords, move, false, false, false, true));
+            tryMoves.push(
+              new Move(cords, move, false, false, false, true, piece)
+            );
             // pawnMoves.push(move);
           }
         }
@@ -418,11 +551,23 @@ export default function GameManager() {
         // +1 +2 (forward) moves
         let oneMove = cords.add(new Cords(1 * colorDir, 0));
         if (!(position[oneMove.row][oneMove.col] instanceof Piece)) {
-          tryMoves.push(new Move(cords, oneMove, false, false, false, true));
+          tryMoves.push(
+            new Move(cords, oneMove, false, false, false, true, piece)
+          );
           if (cords.row == colorFirst) {
             let dMove = cords.add(new Cords(2 * colorDir, 0));
             if (!(position[dMove.row][dMove.col] instanceof Piece)) {
-              tryMoves.push(new Move(cords, dMove, true, false, false, true));
+              let epMove = new Move(
+                cords,
+                dMove,
+                true,
+                false,
+                false,
+                true,
+                piece
+              );
+              epMove.setEnPassant(oneMove);
+              tryMoves.push(epMove);
             }
           }
         }
@@ -443,15 +588,31 @@ export default function GameManager() {
           }
         }
         tryMoves = tmpMoves;
+        if (enPassant != "-") {
+          for (let move of trySquares) {
+            if (move.equals(notationToCords(enPassant))) {
+              tryMoves.push(
+                new Move(
+                  cords,
+                  notationToCords(enPassant),
+                  false,
+                  false,
+                  false,
+                  true,
+                  piece
+                )
+              );
+            }
+          }
+        }
       } else if (piece.type == ENUM.PIECE_TYPE.KING) {
         for (let sq of trySquares) {
-          tryMoves.push(new Move(cords, sq, false, false, false, false));
+          tryMoves.push(new Move(cords, sq, false, false, false, false, piece));
         }
 
         // castles
         if (!isCheck(position, piece.getEnemyColor())) {
           let castleObj = new Castles(castles);
-          console.log(castleObj);
           const squaresUnderAttack = getAllSquaresUnderAttack(
             position,
             piece.getEnemyColor()
@@ -488,7 +649,8 @@ export default function GameManager() {
                       false,
                       true,
                       false,
-                      false
+                      false,
+                      piece
                     );
                     castleMove.setCastle(
                       anotherS,
@@ -510,7 +672,6 @@ export default function GameManager() {
             (piece.color == ENUM.CHESS_COLOR.WHITE && castleObj.whiteQueen) ||
             (piece.color == ENUM.CHESS_COLOR.BLACK && castleObj.blackQueen)
           ) {
-            console.log("1");
             // QUEENS SIDE
             const oneS = cords.add(new Cords(0, -1));
             const twoS = cords.add(new Cords(0, -2));
@@ -520,13 +681,11 @@ export default function GameManager() {
                 !(position[oneS.row][oneS.col] instanceof Piece) &&
                 squaresUnderAttack[twoS.row][twoS.col] == false
               ) {
-                console.log("2");
                 let anotherS = cords.add(new Cords(0, -2));
                 while (areCordsOnBoard(anotherS)) {
                   if (
                     !(position[anotherS.row][anotherS.col] instanceof Piece)
                   ) {
-                    console.log("3");
                     // next
                     anotherS = anotherS.add(new Cords(0, -1));
                   } else if (
@@ -541,7 +700,8 @@ export default function GameManager() {
                       false,
                       true,
                       false,
-                      false
+                      false,
+                      piece
                     );
                     castleMove.setCastle(
                       anotherS,
@@ -563,7 +723,7 @@ export default function GameManager() {
         }
       } else {
         for (let sq of trySquares) {
-          tryMoves.push(new Move(cords, sq, false, false, false, false));
+          tryMoves.push(new Move(cords, sq, false, false, false, false, piece));
         }
       }
 
@@ -595,7 +755,8 @@ export default function GameManager() {
                   move.enPassant,
                   move.castle,
                   move.promotion,
-                  true
+                  true,
+                  piece
                 )
               );
             } else {
@@ -617,6 +778,8 @@ export default function GameManager() {
   }); */
   useEffect(() => {
     setPosition(new FenObject(gameHistory[currentMoveNr]).positionArr);
+    // markCurrentMove();
+    // console.log(currentMoveNr);
     /*  isGameEnd(position);
     console.log(position);
     console.log(gameHistory);
@@ -629,7 +792,14 @@ export default function GameManager() {
       setActivePiece(piece);
       // setActivePiece(position[cords.row][cords.col]);
       setActivePiecePosition(cords);
-      setPossibleMoves(getPossibleMoves(piece, cords, getCastlesFromFen()));
+      setPossibleMoves(
+        getPossibleMoves(
+          piece,
+          cords,
+          getCastlesFromFen(),
+          getEnPassantFromFen()
+        )
+      );
     }
   }
 
@@ -645,12 +815,7 @@ export default function GameManager() {
   }
 
   return (
-    <div>
-      {/* TODO: 
-                do Board dajemy 2 metody: getMove() makeMoveOnBoard()
-                + potrzebne state robimy i to powinno dać możliwość robienia ruchów
-                uwaga: problem bedzie dotyczył dobrego napisania metody odpowiedzialnej za robienie ruchu - musi przekawyzać dane o en passant, roszadach itd.
-            */}
+    <div className="game_manager">
       <Board
         colorOnMove={colorOnMove}
         onPieceClick={onPieceClick}
@@ -660,11 +825,15 @@ export default function GameManager() {
         // manageMove={manageMove}
         position={new FenObject(gameHistory[currentMoveNr]).positionArr}
       />
-
-      <button onClick={goToStart}>{"<<<"}</button>
-      <button onClick={goOneBack}>{"<"}</button>
-      <button onClick={goOneForward}>{">"}</button>
-      <button onClick={goToEnd}>{">>>"}</button>
+      <SidePanel
+        currentMoveNr={currentMoveNr}
+        movesList={movesList}
+        goToStart={goToStart}
+        goOneBack={goOneBack}
+        goOneForward={goOneForward}
+        goToEnd={goToEnd}
+        setMoveNr={setCurrentMoveNr}
+      />
     </div>
   );
 }

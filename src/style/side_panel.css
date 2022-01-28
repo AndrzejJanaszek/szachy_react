@@ -1,0 +1,45 @@
+.side_panel {
+  height: 800px;
+  padding: 1rem;
+  margin-left: 2rem;
+  display: grid;
+  grid-template-rows: 1fr 5rem;
+
+  background-color: rgb(246, 246, 246);
+}
+.game_history {
+  min-width: 17rem;
+  border-radius: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.1);
+  height: 100%;
+  overflow-y: scroll;
+}
+.game_history > ul {
+}
+.game_history > ul > li {
+}
+.game_history > ul > li:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+.currentMove {
+  font-weight: bold;
+}
+.manager {
+  padding: 1rem 0rem 1rem 0rem;
+  /* background-color: rgb(139, 139, 139); */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+.manager_btn {
+  box-shadow: 0 0 0.4rem rgba(0, 0, 0, 0.4);
+  padding: 0.5rem;
+  display: grid;
+  place-items: center;
+  border: 2px solid black;
+  background-color: rgb(177, 177, 177);
+  transition-duration: 0.2s;
+}
+.manager_btn:hover {
+  background-color: rgb(233, 233, 233);
+}

@@ -156,7 +156,8 @@ export class Cords{
 
 export class Move{
     // from, to : Cords()
-    constructor(from ,to , enPassant, castle, promotion, TOP){
+    constructor(from ,to , enPassant, castle, promotion, TOP, piece){
+        this.piece = piece;
         this.from = from;
         this.to = to;
         this.enPassant = enPassant;
@@ -176,6 +177,9 @@ export class Move{
                 toKing : toKing,
                 color : color,
             }
+        }
+        this.setEnPassant = (cords)=>{
+            this.enPassantCords = cords;
         }
         this.clone = ()=>{
             return new Move(this.from, this.to, this.enPassant, this.castle, this.promotion, this.TOP);

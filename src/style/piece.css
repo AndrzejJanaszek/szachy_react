@@ -1,42 +1,44 @@
-.piece{
-    --prSize : 90%;
-    width: var(--prSize);height: var(--prSize);
-    background-size:contain;
+.piece {
+  --prSize: 90%;
+  width: var(--prSize);
+  height: var(--prSize);
+  background-size: contain;
+  filter: drop-shadow(0 0 0.3rem rgba(0, 0, 0, 0.3));
 }
-.piece--pawn.piece--white{
-    background-image: url('../img/pieces/white/P.svg');
+.piece--pawn.piece--white {
+  background-image: url("../img/pieces/white/P.svg");
 }
-.piece--rook.piece--white{
-    background-image: url('../img/pieces/white/R.svg');
+.piece--rook.piece--white {
+  background-image: url("../img/pieces/white/R.svg");
 }
-.piece--bishop.piece--white{
-    background-image: url('../img/pieces/white/B.svg');
+.piece--bishop.piece--white {
+  background-image: url("../img/pieces/white/B.svg");
 }
-.piece--knight.piece--white{
-    background-image: url('../img/pieces/white/N.svg');
+.piece--knight.piece--white {
+  background-image: url("../img/pieces/white/N.svg");
 }
-.piece--queen.piece--white{
-    background-image: url('../img/pieces/white/Q.svg');
+.piece--queen.piece--white {
+  background-image: url("../img/pieces/white/Q.svg");
 }
-.piece--king.piece--white{
-    background-image: url('../img/pieces/white/K.svg');
+.piece--king.piece--white {
+  background-image: url("../img/pieces/white/K.svg");
 }
 
-.piece--pawn.piece--black{
-    background-image: url('../img/pieces/black/p.svg');
+.piece--pawn.piece--black {
+  background-image: url("../img/pieces/black/p.svg");
 }
-.piece--rook.piece--black{
-    background-image: url('../img/pieces/black/r.svg');
+.piece--rook.piece--black {
+  background-image: url("../img/pieces/black/r.svg");
 }
-.piece--bishop.piece--black{
-    background-image: url('../img/pieces/black/b.svg');
+.piece--bishop.piece--black {
+  background-image: url("../img/pieces/black/b.svg");
 }
-.piece--knight.piece--black{
-    background-image: url('../img/pieces/black/n.svg'); 
+.piece--knight.piece--black {
+  background-image: url("../img/pieces/black/n.svg");
 }
-.piece--queen.piece--black{
-    background-image: url('../img/pieces/black/q.svg'); 
+.piece--queen.piece--black {
+  background-image: url("../img/pieces/black/q.svg");
 }
-.piece--king.piece--black{
-    background-image: url('../img/pieces/black/k.svg');
+.piece--king.piece--black {
+  background-image: url("../img/pieces/black/k.svg");
 }
