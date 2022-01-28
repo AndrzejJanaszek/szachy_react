@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useEffect } from "react/cjs/react.development";
+import { useEffect } from "react";
 import { Castles, Cords, FenObject, Move, Piece } from "../other/classes";
 import ENUM from "../other/enum";
 import PIECE_MOVES from "../other/pieceMoves";
@@ -7,12 +7,12 @@ import Board from "./Board";
 
 export default function GameManager() {
   // const [gameHistory, setGameHistory] = useState(["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1","rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1","rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2","rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2","r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"]);
-  //   const [gameHistory, setGameHistory] = useState([
-  //     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  //   ]);
   const [gameHistory, setGameHistory] = useState([
-    "r3k2r/pppbqppp/2nb1n2/3pp3/3PP3/2NB1N2/PPPBQPPP/R3K2R w KQkq - 4 10",
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   ]);
+  // const [gameHistory, setGameHistory] = useState([
+  //   "r3k2r/pppbqppp/2nb1n2/3pp3/3PP3/2NB1N2/PPPBQPPP/R3K2R w KQkq - 4 10",
+  // ]);
   const [currentMoveNr, setCurrentMoveNr] = useState(0);
   const [position, setPosition] = useState(
     new FenObject(gameHistory[currentMoveNr]).positionArr
@@ -612,9 +612,9 @@ export default function GameManager() {
   /* useEffect(() => {
     document.title = `Klknięto ${currentMoveNr} razy`;
   }, [currentMoveNr]); */
-  useEffect(() => {
+  /* useEffect(() => {
     console.log(gameHistory);
-  });
+  }); */
   useEffect(() => {
     setPosition(new FenObject(gameHistory[currentMoveNr]).positionArr);
     /*  isGameEnd(position);
