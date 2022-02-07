@@ -1,6 +1,6 @@
 .square {
-  width: 100px;
-  height: 100px;
+  width: 6rem;
+  height: 6rem;
   display: grid;
   place-items: center;
   position: relative;
@@ -14,6 +14,9 @@
   background-color: rgb(197, 168, 89);
   /* z-index: 100;
   box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.2); */
+}
+.square--active {
+  background-color: rgb(63, 136, 41);
 }
 .square--possible::after {
   position: absolute;

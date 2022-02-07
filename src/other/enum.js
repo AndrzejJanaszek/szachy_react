@@ -10,6 +10,10 @@ const ENUM = {
     CHESS_COLOR : {
         WHITE : "white",
         BLACK : "black"
+    },
+    GAME_STATUS : {
+        WIN : "win",
+        PAT : "pat"
     }
 }
 

@@ -4,6 +4,7 @@ import FirstPage from "@mui/icons-material/FirstPage";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
 import NavigateNext from "@mui/icons-material/NavigateNext";
 import LastPage from "@mui/icons-material/LastPage";
+import Settings from "@mui/icons-material/Settings";
 /* import {
   FirstPage,
   NavigateBefore,
@@ -20,48 +21,44 @@ export default function SidePanel({
   currentMoveNr,
   setMoveNr,
 }) {
-  /* const [moves, setMoves] = useState([]);
-
-  function generateMovesHistoryArray() {
-    for(let turn of movesList){
-
-    }
-  } */
-
   function generateMoves() {
-    if (movesList.length > 0) {
+    if (movesList.length > 0 && movesList[0].length > 0) {
       let elements = [];
-      const moves = movesList.split(" ");
-      for (let i = 0; i < moves.length; i++) {
-        let markClass = "";
-        if (currentMoveNr - 1 == i) {
-          markClass = "currentMove";
-        }
+
+      let index = 1;
+      let cmNr = 0;
+      for (let move of movesList) {
         elements.push(
-          <li
-            className={markClass}
-            onClick={() => {
-              setMoveNr(i + 1);
-            }}
-          >
-            {Math.floor(i / 2) + 1 + ". " + moves[i] + " "}
+          <li>
+            {<div>{index + "."}</div>}
+            {(() => {
+              let zmm = [];
+              for (let element of move) {
+                const locNr = cmNr;
+                let classNameCurrenMove = "";
+                if (cmNr == currentMoveNr - 1) {
+                  classNameCurrenMove = " currentMove ";
+                }
+                zmm.push(
+                  <div
+                    className={"game_history__move" + classNameCurrenMove}
+                    onClick={() => {
+                      setMoveNr(locNr + 1);
+                    }}
+                  >
+                    {element}
+                  </div>
+                );
+                cmNr++;
+              }
+              return zmm;
+            })()}
           </li>
         );
+
+        index++;
       }
       return elements;
-      /* let moves = [];
-
-      const movesArr = movesList.split(" ");
-      for (let i = 0; i < movesArr.length; i++) {
-        moves[Math.floor(i / 2)] = [];
-        moves[Math.floor(i / 2)].push(movesArr[i]);
-      }
-
-      let elements;
-      for (let i = 0; i < moves.length; i++) {
-        elements += <div>{parseInt(i + 1) + moves[i].join(" ")}</div>;
-      }
-      return elements; */
     }
   }
 
@@ -83,6 +80,11 @@ export default function SidePanel({
         <button className="manager_btn" onClick={goToEnd}>
           <LastPage></LastPage>
         </button>
+
+        {/*TODO:
+         <button className="manager_btn" onClick={openSettings}>
+          <Settings></Settings>
+        </button> */}
       </div>
     </div>
   );

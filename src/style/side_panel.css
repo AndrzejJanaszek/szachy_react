@@ -1,5 +1,5 @@
 .side_panel {
-  height: 800px;
+  height: 50rem;
   padding: 1rem;
   margin-left: 2rem;
   display: grid;
@@ -8,6 +8,8 @@
   background-color: rgb(246, 246, 246);
 }
 .game_history {
+  --hover_move: rgba(0, 0, 0, 0.2);
+  --active_move: rgba(0, 0, 0, 0.2);
   min-width: 17rem;
   border-radius: 0.5rem;
   background-color: rgba(0, 0, 0, 0.1);
@@ -15,14 +17,23 @@
   overflow-y: scroll;
 }
 .game_history > ul {
+  padding: 0 1rem;
+  list-style-type: none;
 }
 .game_history > ul > li {
+  display: grid;
+  grid-template-columns: 2rem 1fr 1fr;
 }
-.game_history > ul > li:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+.game_history > ul > li > div {
+  padding: 0.2rem;
+  transition-duration: 0.15s;
+}
+.game_history > ul > li > .game_history__move:hover {
+  background-color: var(--hover_move);
 }
 .currentMove {
   font-weight: bold;
+  background-color: var(--active_move);
 }
 .manager {
   padding: 1rem 0rem 1rem 0rem;

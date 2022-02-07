@@ -15,7 +15,7 @@ export default function GameManager() {
   ]);
   const [movesList, setMovesList] = useState("");
   // const [gameHistory, setGameHistory] = useState([
-  //   "r3k2r/pppbqppp/2nb1n2/3pp3/3PP3/2NB1N2/PPPBQPPP/R3K2R w KQkq - 4 10",
+  //   "rnbqkbnr/pppppppp/8/1NNN4/1N1NNNN1/1NNNNNN1/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   // ]);
   const [currentMoveNr, setCurrentMoveNr] = useState(0);
   const [position, setPosition] = useState(
@@ -28,6 +28,8 @@ export default function GameManager() {
 
   function resetPossibleMoves() {
     setPossibleMoves([]);
+    setActivePiece(null);
+    setActivePiecePosition(null);
   }
 
   // UI functions
@@ -54,18 +56,24 @@ export default function GameManager() {
 
   // helper functions
 
-  /* function markCurrentMove() {
-    if (movesList.length > 0) {
-      let newList = movesList.split(" ");
-      for (let i = 0; i < newList.length; i++) {
-        if (newList[i][0] == "{") {
-          newList[i] = newList[i].slice(1, newList[i].length - 1);
+  function PGN2Array(pgn) {
+    let str = pgn.split(" ");
+    let moveList = [[]];
+    let moveIndex = 0;
+    for (let i = 0; i < str.length; i++) {
+      if (i % 3 == 0) {
+        if (i > 0) {
+          moveIndex++;
+          moveList.push([]);
         }
+        // moveList.push([]);
+      } else {
+        // moveList[moveIndex].push(str[i]);
+        moveList[moveIndex].push(str[i]);
       }
-      newList[currentMoveNr - 1] = "{" + newList[currentMoveNr - 1] + "}";
-      setMovesList(newList.join(" "));
     }
-  } */
+    return moveList;
+  }
 
   function getMoveNotation(move) {
     if (move.castle) {
@@ -397,21 +405,14 @@ export default function GameManager() {
           : ENUM.CHESS_COLOR.WHITE;
       if (isCheck(positionArr, attackingColor)) {
         // mate
-        console.log("KONIEC GRY: MAT");
-        console.log("WYGRAŁY");
-        console.log(attackingColor);
+        return { status: ENUM.GAME_STATUS.WIN, color: attackingColor };
       } else {
-        // pat
-        console.log("KONIEC GRY: PAT");
+        //pat
+        return { status: ENUM.GAME_STATUS.PAT, color: attackingColor };
       }
-    }
 
-    /* if(){
-            // looking for mate
-        }
-        else{
-            // looking for pat
-        } */
+      return null;
+    }
   }
 
   //moves
@@ -508,14 +509,31 @@ export default function GameManager() {
 
     setMovesList((prev) => {
       if (prev.trim() === "") {
-        return prev + getMoveNotation(move);
+        return "1. " + getMoveNotation(move);
       } else {
+        let prevSplited = prev.split(" ");
+        if (prevSplited.length >= 3) {
+          if (
+            prevSplited[prevSplited.length - 3].charAt(
+              prevSplited[prevSplited.length - 3].length - 1
+            ) == "."
+          ) {
+            return (
+              prev +
+              " " +
+              (parseInt(prevSplited[prevSplited.length - 3]) + 1) +
+              ". " +
+              getMoveNotation(move)
+            );
+          }
+        }
         return prev + " " + getMoveNotation(move);
       }
     });
     setGameHistory(newGameHistory);
     resetPossibleMoves();
     setActivePiece(null);
+    setActivePiecePosition(null);
     setColorOnMove(() =>
       colorOnMove == ENUM.CHESS_COLOR.WHITE
         ? ENUM.CHESS_COLOR.BLACK
@@ -770,20 +788,8 @@ export default function GameManager() {
     return finalMoves;
   }
 
-  /* useEffect(() => {
-    document.title = `Klknięto ${currentMoveNr} razy`;
-  }, [currentMoveNr]); */
-  /* useEffect(() => {
-    console.log(gameHistory);
-  }); */
   useEffect(() => {
     setPosition(new FenObject(gameHistory[currentMoveNr]).positionArr);
-    // markCurrentMove();
-    // console.log(currentMoveNr);
-    /*  isGameEnd(position);
-    console.log(position);
-    console.log(gameHistory);
-    console.log(currentMoveNr); */
   }, [currentMoveNr]);
 
   // NEW FUNCTIONS FOR REWRITE
@@ -791,15 +797,18 @@ export default function GameManager() {
     if (currentMoveNr == gameHistory.length - 1) {
       setActivePiece(piece);
       // setActivePiece(position[cords.row][cords.col]);
-      setActivePiecePosition(cords);
-      setPossibleMoves(
-        getPossibleMoves(
-          piece,
-          cords,
-          getCastlesFromFen(),
-          getEnPassantFromFen()
-        )
+      const possMoves = getPossibleMoves(
+        piece,
+        cords,
+        getCastlesFromFen(),
+        getEnPassantFromFen()
       );
+      if (possMoves.length > 0) {
+        setActivePiecePosition(cords);
+      } else {
+        setActivePiecePosition(null);
+      }
+      setPossibleMoves(possMoves);
     }
   }
 
@@ -817,17 +826,19 @@ export default function GameManager() {
   return (
     <div className="game_manager">
       <Board
+        gameEnd={isGameEnd(position)}
         colorOnMove={colorOnMove}
         onPieceClick={onPieceClick}
         onPossibleSquareClick={onPossibleSquareClick}
         onEmptySquareClick={onEmptySquareClick}
         possibleMoves={possibleMoves}
+        activePiecePosition={activePiecePosition}
         // manageMove={manageMove}
         position={new FenObject(gameHistory[currentMoveNr]).positionArr}
       />
       <SidePanel
         currentMoveNr={currentMoveNr}
-        movesList={movesList}
+        movesList={PGN2Array(movesList)}
         goToStart={goToStart}
         goOneBack={goOneBack}
         goOneForward={goOneForward}
