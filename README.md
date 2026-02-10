@@ -23,3 +23,16 @@ Aplikacja szachowa stworzona w 2022 roku w ramach nauki React i eksperymentów z
 - Zapisuje historię ruchów, którą można przeglądać klikając na ruch lub używając strzałek w menu.
 - Pozwala zmienić perspektywę planszy na drugiego gracza.
 - Wykrywa wynik gry (mat, pat).
+
+---
+
+# App Images | Zdjęcia Aplikacji
+
+### Move highlighting | Podświetlanie ruchów
+<img src="./img_readme/view1.png" style="width: 750px;">
+
+### Other player perspective | Perspektywa drugiego gracza
+<img src="./img_readme/view2.png" style="width: 750px;">
+
+### Mate | Mat
+<img src="./img_readme/mat.png" style="width: 750px;">
