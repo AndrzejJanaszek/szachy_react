@@ -26,6 +26,14 @@ Aplikacja szachowa stworzona w 2022 roku w ramach nauki React i eksperymentów z
 
 ---
 
+# App Page | Strona Aplikacji
+
+If you want to try it out yourself, here’s the link [EN] \
+Jeśli chcesz wypróbować aplikację samodzielnie, oto link [PL] \
+[chess_react on github pages](https://andrzejjanaszek.github.io/chess_react/)
+
+---
+
 # App Images | Zdjęcia Aplikacji
 
 ### Move highlighting | Podświetlanie ruchów
